@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldBot - Coupa Field Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lexend:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F7F8FA;--surface:#fff;--border:#E2E5EA;--border2:#C8CDD6;
+  --blue:#2563EB;--blue-light:#EFF4FF;--blue-mid:#BFCFFF;
+  --green:#16A34A;--green-bg:#F0FDF4;
+  --red:#DC2626;--red-bg:#FEF2F2;
+  --amber:#D97706;--amber-bg:#FFFBEB;
+  --indigo:#4338CA;--indigo-bg:#EEF2FF;
+  --text:#111827;--text2:#4B5563;--text3:#9CA3AF;
+  --shadow:0 1px 3px rgba(0,0,0,.08);--shadow-md:0 4px 16px rgba(0,0,0,.08);
+  --mono:Menlo,Consolas,monospace;--sans:Inter,sans-serif;--display:Lexend,sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.gate-card{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;box-shadow:var(--shadow-md);}
+.gate-logo{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.gate-logo-icon{width:36px;height:36px;background:var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.gate-logo-name{font-family:var(--display);font-size:22px;font-weight:700;}
+.gate-logo-name span{color:var(--blue);}
+.gate-tagline{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:28px;}
+.gate-label{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px;}
+.gate-desc{font-size:13px;color:var(--text3);line-height:1.6;margin-bottom:14px;}
+.gate-desc a{color:var(--blue);text-decoration:none;}
+.input-wrap{position:relative;margin-bottom:12px;}
+.key-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px 40px 10px 12px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .15s;}
+.key-input:focus{border-color:var(--blue);background:#fff;}
+.key-input::placeholder{color:var(--text3);}
+.toggle-vis{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;}
+.gate-btn{width:100%;padding:11px 0;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;background:var(--blue);color:#fff;transition:background .15s;}
+.gate-btn:hover{background:#1d4ed8;}
+.gate-error{display:none;color:var(--red);font-size:12px;margin-top:8px;text-align:center;}
+.gate-hint{font-size:12px;color:var(--text3);text-align:center;margin-top:16px;}
+.gate-hint a{color:var(--blue);text-decoration:none;}
+#app{height:100vh;display:flex;flex-direction:column;}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:58px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;box-shadow:var(--shadow);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-name{font-family:var(--display);font-size:16px;font-weight:700;}
+.logo-name span{color:var(--blue);}
+.logo-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.obj-wrap{position:relative;}
+.obj-select{appearance:none;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 28px 7px 12px;color:var(--text);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;outline:none;}
+.obj-select:focus{border-color:var(--blue);}
+.obj-arrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;font-size:10px;}
+.hdr-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.hdr-btn:hover{border-color:var(--blue);color:var(--blue);}
+.hdr-btn.danger:hover{border-color:var(--red);color:var(--red);}
+main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:800px;width:100%;margin:0 auto;padding:0 20px;}
+.messages{flex:1;overflow-y:auto;padding:24px 0 12px;display:flex;flex-direction:column;gap:16px;}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;gap:20px;flex:1;}
+.welcome-icon{width:56px;height:56px;background:var(--blue-light);border:2px solid var(--blue-mid);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto;}
+.welcome-title{font-family:var(--display);font-size:20px;font-weight:700;}
+.welcome-title span{color:var(--blue);}
+.welcome-sub{font-size:14px;color:var(--text2);max-width:340px;margin:0 auto;line-height:1.6;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:520px;}
+.chip{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:7px 16px;font-size:13px;color:var(--text2);font-weight:500;cursor:pointer;transition:all .15s;}
+.chip:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+.field-count{font-size:12px;color:var(--text3);}
+.field-count span{color:var(--blue);font-weight:600;}
+.msg{display:flex;gap:10px;align-items:flex-start;animation:fadeUp .2s ease both;}
+.msg.user{flex-direction:row-reverse;}
+.avatar{width:30px;height:30px;border-radius:8px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.avatar.user{background:var(--blue);color:#fff;}
+.avatar.bot{background:var(--surface);border:1.5px solid var(--border);color:var(--text2);font-size:14px;}
+.bubble{max-width:78%;padding:12px 16px;border-radius:12px;}
+.bubble.user{background:var(--blue);color:#fff;border-radius:12px 4px 12px 12px;font-size:14px;line-height:1.6;}
+.bubble.bot{background:var(--surface);border:1px solid var(--border);border-radius:4px 12px 12px 12px;box-shadow:var(--shadow);}
+.bot-section{margin-bottom:10px;}
+.bot-section:last-child{margin-bottom:0;}
+.section-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.section-body{font-size:13.5px;color:var(--text);line-height:1.65;}
+.section-body code{background:var(--bg);color:var(--indigo);padding:1px 6px;border-radius:4px;font-size:12px;font-family:var(--mono);border:1px solid var(--border);}
+.req-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;}
+.req-yes{background:var(--green-bg);color:var(--green);border:1px solid #bbf7d0;}
+.req-no{background:var(--red-bg);color:var(--red);border:1px solid #fecaca;}
+.req-cond{background:var(--amber-bg);color:var(--amber);border:1px solid #fde68a;}
+.req-ro{background:var(--indigo-bg);color:var(--indigo);border:1px solid #c7d2fe;}
+.typing{display:flex;gap:10px;align-items:center;animation:fadeUp .2s ease;}
+.dots{padding:12px 16px;border-radius:4px 12px 12px 12px;background:var(--surface);border:1px solid var(--border);display:flex;gap:5px;box-shadow:var(--shadow);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border2);animation:bounce 1.2s infinite;}
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
+.error-bar{padding:10px 14px;border-radius:8px;background:var(--red-bg);border:1px solid #fecaca;font-size:13px;color:var(--red);}
+.input-area{padding:12px 0 20px;border-top:1px solid var(--border);}
+.input-box{display:flex;gap:8px;align-items:flex-end;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;transition:border-color .15s;box-shadow:var(--shadow);}
+.input-box:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+.obj-tag{flex-shrink:0;align-self:flex-end;margin-bottom:2px;font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:6px;padding:3px 8px;white-space:nowrap;}
+#q{flex:1;resize:none;background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;max-height:120px;overflow:auto;outline:none;}
+#q::placeholder{color:var(--text3);}
+.send-btn{flex-shrink:0;align-self:flex-end;width:34px;height:34px;border-radius:8px;border:none;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;}
+.send-btn.active{background:var(--blue);color:#fff;}
+.send-btn.active:hover{background:#1d4ed8;}
+.send-btn.inactive{background:var(--bg);color:var(--text3);cursor:not-allowed;border:1.5px solid var(--border);}
+.input-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:8px;}
+.spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:spin .7s linear infinite;}
+
+.lottie-wrap{width:200px;height:200px;margin:0 auto;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+select option{background:#fff;color:#111827;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <div class="gate-logo-icon">&#x1F916;</div>
+      <div class="gate-logo-name">Field<span>Bot</span></div>
+    </div>
+    <div class="gate-tagline">Coupa Field Intelligence &middot; Powered by Groq</div>
+    <div class="gate-label">Groq API Key</div>
+    <div class="gate-desc">
+      Free key at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> &mdash; no credit card needed.<br>
+      Your key stays in your browser only, never stored elsewhere.
+    </div>
+    <div class="input-wrap">
+      <input id="keyInput" class="key-input" type="password" placeholder="Paste your Groq API key here" autocomplete="off">
+      <button class="toggle-vis" onclick="toggleVis()">&#x1F441;</button>
+    </div>
+    <button class="gate-btn" onclick="startApp()">Start FieldBot &rarr;</button>
+    <div id="gateError" class="gate-error">Please paste your Groq API key first.</div>
+    <div class="gate-hint">Uses llama-3.3-70b-versatile &nbsp;&middot;&nbsp; 15 Coupa objects included</div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">&#x1F916;</div>
+      <div>
+        <div class="logo-name">Field<span>Bot</span></div>
+        <div class="logo-sub">Coupa Field Intelligence</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="obj-wrap">
+        <select id="objSelect" class="obj-select" onchange="changeObject()"></select>
+        <span class="obj-arrow">&#9660;</span>
+      </div>
+      <button class="hdr-btn" onclick="clearChat()">&#x21BA; New chat</button>
+      <button class="hdr-btn danger" onclick="changeKey()">Change key</button>
+    </div>
+  </header>
+  <main>
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <div class="input-box">
+        <span class="obj-tag" id="objTag">Invoice</span>
+        <textarea id="q" rows="1" placeholder="Ask about a field&hellip;" onkeydown="handleKey(event)" oninput="autoResize(this);updateSendBtn();"></textarea>
+        <button class="send-btn inactive" id="sendBtn" onclick="sendMessage()">&#x2191;</button>
+      </div>
+      <div class="input-hint">Enter to send &nbsp;&middot;&nbsp; Shift+Enter for new line</div>
+    </div>
+  </main>
+</div>
+
+<script>
+var GROQ_KEY = "";
+var currentObject = "Invoice";
+var chatHistory = [];
+var isLoading = false;
+
+
+var SCHEMA = {
+  "Invoice": {
+    description: "Supplier invoice submitted for payment in Coupa.",
+    api_endpoint: "/api/invoices",
+    fields: {
+      "id":                { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned numeric ID.", notes:"System-generated. Use for GET/PUT requests." },
+      "invoice-number":    { type:"String (max 255)", required_for_api:"Yes", description:"Unique identifier assigned by the supplier.", notes:"Required on POST. Must be unique per supplier. Used for duplicate detection." },
+      "invoice-date":      { type:"Date (YYYY-MM-DD)", required_for_api:"Yes", description:"Date the invoice was issued by the supplier.", notes:"Required on POST. Cannot be a future date in most configurations." },
+      "supplier":          { type:"Object {id, name}", required_for_api:"Yes", description:"The Coupa Supplier that issued this invoice.", notes:"Required on POST. Supply as {id:123} or {name:'Supplier Name'}." },
+      "supplier-site":     { type:"Object {id, name}", required_for_api:"No", description:"Specific supplier site (remit-to address) for this invoice.", notes:"Defaults to supplier primary remit-to site." },
+      "currency":          { type:"Object {code}", required_for_api:"Yes", description:"Invoice currency e.g. USD, GBP, EUR.", notes:"Required on POST. Use ISO 4217 three-letter codes." },
+      "gross-total":       { type:"Decimal", required_for_api:"Read-only", description:"Total including taxes. Auto-calculated from line totals.", notes:"Do not supply on POST or PUT." },
+      "net-total":         { type:"Decimal", required_for_api:"Read-only", description:"Pre-tax total of all invoice lines.", notes:"Calculated by Coupa." },
+      "tax-amount":        { type:"Decimal", required_for_api:"No", description:"Total tax amount. Can be header-level or summed from line-level tax.", notes:"Optional on POST." },
+      "status":            { type:"String (enum)", required_for_api:"No", description:"Workflow status of the invoice.", notes:"Allowed: draft, submitted, approved, cancelled, on_hold, voided. Defaults to draft." },
+      "payment-status":    { type:"String (enum)", required_for_api:"Read-only", description:"Payment processing status.", notes:"Allowed: unpaid, partially_paid, paid. System-managed." },
+      "payment-term":      { type:"Object {id, code}", required_for_api:"No", description:"Payment terms e.g. Net 30.", notes:"Defaults to supplier default if not provided." },
+      "due-date":          { type:"Date (YYYY-MM-DD)", required_for_api:"No", description:"Date payment is due to the supplier.", notes:"Calculated from invoice-date + payment-term if not set." },
+      "line-items":        { type:"Array of invoice-line objects", required_for_api:"Conditional", description:"Individual line items detailing goods or services.", notes:"At least one line item required for a valid invoice." },
+      "purchase-order":    { type:"Object {id, po-number}", required_for_api:"No", description:"Links to a PO for 2-way or 3-way matching.", notes:"Required if PO-flip workflow is enabled." },
+      "ship-to-address":   { type:"Object (address)", required_for_api:"No", description:"Address to which goods were shipped.", notes:"Required for PO-backed invoices in some configurations." },
+      "bill-to-address":   { type:"Object (address)", required_for_api:"No", description:"Buyer entity address being billed.", notes:"Typically defaulted from the PO or account settings." },
+      "remit-to-address":  { type:"Object (address)", required_for_api:"No", description:"Supplier address where payment should be sent.", notes:"Defaults from supplier remit-to addresses." },
+      "account":           { type:"Object {id, code}", required_for_api:"No", description:"GL account at header level.", notes:"Can be overridden at line level." },
+      "document-type":     { type:"String (enum)", required_for_api:"No", description:"Type of invoice document.", notes:"Allowed: Invoice, Credit Note, Debit Note. Defaults to Invoice." },
+      "exported":          { type:"Boolean", required_for_api:"Read-only", description:"Whether the invoice has been exported to ERP.", notes:"Set by export integrations." },
+      "attachments":       { type:"Array of attachment objects", required_for_api:"No", description:"Supporting documents such as PDF copies.", notes:"Use multipart/form-data for file uploads." },
+      "custom-fields":     { type:"Object (key-value pairs)", required_for_api:"No", description:"Custom fields configured for your Coupa instance.", notes:"Field names vary by Coupa configuration." },
+      "created-at":        { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"Timestamp when the invoice record was created.", notes:"Do not supply on POST or PUT." },
+      "updated-at":        { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"Timestamp of the last update.", notes:"Do not supply on POST or PUT." }
+    }
+  },
+  "Invoice Line": {
+    description: "An individual line item on a Coupa invoice representing a specific good or service.",
+    api_endpoint: "/api/invoices/{id}/invoice-lines",
+    fields: {
+      "id":                  { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "line-num":            { type:"Integer", required_for_api:"No", description:"Sequential line number on the invoice.", notes:"Auto-assigned if not provided." },
+      "description":         { type:"String", required_for_api:"Yes", description:"Description of the goods or services.", notes:"Required on POST." },
+      "quantity":            { type:"Decimal", required_for_api:"Yes", description:"Quantity of goods or services invoiced.", notes:"Required on POST." },
+      "unit-price":          { type:"Decimal", required_for_api:"Yes", description:"Price per unit.", notes:"Required on POST." },
+      "total":               { type:"Decimal", required_for_api:"Read-only", description:"Line total (quantity x unit-price). Auto-calculated.", notes:"Read-only." },
+      "uom":                 { type:"Object {code}", required_for_api:"No", description:"Unit of measure e.g. Each, Hour, Box.", notes:"Defaults to Each." },
+      "account":             { type:"Object {id, code}", required_for_api:"No", description:"GL account for this line. Overrides header account.", notes:"Optional." },
+      "tax-amount":          { type:"Decimal", required_for_api:"No", description:"Tax amount for this specific line.", notes:"Used for line-level tax reporting." },
+      "tax-code":            { type:"Object {id, name}", required_for_api:"No", description:"Tax code applied to this line.", notes:"Required for tax engine integrations." },
+      "commodity":           { type:"Object {id, name}", required_for_api:"No", description:"Spend category for this line.", notes:"Useful for spend analytics." },
+      "purchase-order-line": { type:"Object {id}", required_for_api:"No", description:"Links to a specific PO line for matching.", notes:"Required for PO-backed invoice lines." },
+      "receipt-line":        { type:"Object {id}", required_for_api:"No", description:"Links to a receipt line for 3-way matching.", notes:"Used in 3-way match workflows." },
+      "item":                { type:"Object {id, item-number}", required_for_api:"No", description:"Catalogue item this line relates to.", notes:"Optional." },
+      "period":              { type:"Object {id, name}", required_for_api:"No", description:"Accounting period this line should post to.", notes:"Used in period-locked environments." }
+    }
+  },
+  "Purchase Order": {
+    description: "A PO issued to a supplier authorising delivery of goods or services at an agreed price.",
+    api_endpoint: "/api/purchase_orders",
+    fields: {
+      "id":                { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned numeric ID.", notes:"Use for GET/PUT requests." },
+      "po-number":         { type:"String", required_for_api:"No", description:"Human-readable PO identifier. Auto-generated if not provided.", notes:"Must be unique if supplied." },
+      "status":            { type:"String (enum)", required_for_api:"No", description:"Workflow status.", notes:"Allowed: draft, pending_approval, issued, soft_closed, closed, cancelled. Defaults to draft." },
+      "supplier":          { type:"Object {id, name}", required_for_api:"Yes", description:"The supplier to whom this PO is issued.", notes:"Required on POST." },
+      "supplier-site":     { type:"Object {id, name}", required_for_api:"No", description:"Specific supplier site for this order.", notes:"Defaults to supplier primary site." },
+      "ship-to-address":   { type:"Object (address)", required_for_api:"Yes", description:"Delivery address for goods.", notes:"Required on POST." },
+      "bill-to-address":   { type:"Object (address)", required_for_api:"No", description:"Billing address.", notes:"Defaults from account settings." },
+      "currency":          { type:"Object {code}", required_for_api:"Yes", description:"Currency of the PO.", notes:"Required on POST." },
+      "total":             { type:"Decimal", required_for_api:"Read-only", description:"Total value. Auto-calculated from order lines.", notes:"Read-only." },
+      "order-lines":       { type:"Array of order-line objects", required_for_api:"Yes", description:"Line items specifying items, quantities, prices, and accounts.", notes:"At least one order line required on POST." },
+      "payment-term":      { type:"Object {id, code}", required_for_api:"No", description:"Payment terms agreed with the supplier.", notes:"Defaults to supplier default." },
+      "buyer":             { type:"Object (user)", required_for_api:"No", description:"The buyer/owner of this PO.", notes:"Defaults to the creating user." },
+      "need-by-date":      { type:"Date (YYYY-MM-DD)", required_for_api:"No", description:"Date goods or services are needed.", notes:"Can be set at line level too." },
+      "ship-to-attention": { type:"String", required_for_api:"No", description:"Name or department to address the shipment to.", notes:"Printed on PO document." },
+      "acknowledged":      { type:"Boolean", required_for_api:"No", description:"Whether the supplier acknowledged the PO.", notes:"Used in supplier acknowledgement workflows." },
+      "exported":          { type:"Boolean", required_for_api:"Read-only", description:"Whether the PO has been exported to ERP.", notes:"Set by export integrations." },
+      "custom-fields":     { type:"Object (key-value pairs)", required_for_api:"No", description:"Custom fields for your Coupa instance.", notes:"Field names vary by configuration." },
+      "created-at":        { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":        { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "Order Line": {
+    description: "An individual line on a Coupa Purchase Order specifying item, quantity, price, and coding.",
+    api_endpoint: "/api/purchase_orders/{id}/order-lines",
+    fields: {
+      "id":                { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "line-num":          { type:"Integer", required_for_api:"No", description:"Sequential line number.", notes:"Auto-assigned if not provided." },
+      "description":       { type:"String", required_for_api:"Yes", description:"Description of goods or services.", notes:"Required on POST." },
+      "quantity":          { type:"Decimal", required_for_api:"Yes", description:"Quantity of units being ordered.", notes:"Required on POST." },
+      "unit-price":        { type:"Decimal", required_for_api:"Yes", description:"Agreed unit price.", notes:"Required on POST." },
+      "total":             { type:"Decimal", required_for_api:"Read-only", description:"Line total (quantity x unit-price).", notes:"Auto-calculated. Read-only." },
+      "uom":               { type:"Object {code}", required_for_api:"No", description:"Unit of measure e.g. Each, Box, Hour.", notes:"Defaults to Each." },
+      "item":              { type:"Object {id, item-number}", required_for_api:"No", description:"Catalogue item being ordered.", notes:"Optional." },
+      "account":           { type:"Object {id, code}", required_for_api:"No", description:"GL account for this line.", notes:"Overrides PO header account." },
+      "commodity":         { type:"Object {id, name}", required_for_api:"No", description:"Spend category.", notes:"Used in spend analytics." },
+      "need-by-date":      { type:"Date (YYYY-MM-DD)", required_for_api:"No", description:"Date goods needed for this line.", notes:"Overrides header need-by-date." },
+      "supplier-part-num": { type:"String", required_for_api:"No", description:"Supplier part number for the item.", notes:"Transmitted on PO to supplier for identification." },
+      "contract-line":     { type:"Object {id}", required_for_api:"No", description:"Links to a specific contract line.", notes:"Enforces contract pricing." },
+      "receipt-required":  { type:"Boolean", required_for_api:"No", description:"Whether a goods receipt is required before invoice matching.", notes:"Defaults from PO type settings." }
+    }
+  },
+  "Supplier": {
+    description: "A vendor or supplier company registered in Coupa.",
+    api_endpoint: "/api/suppliers",
+    fields: {
+      "id":                    { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned numeric ID.", notes:"Use for GET/PUT requests." },
+      "name":                  { type:"String (max 255)", required_for_api:"Yes", description:"Legal name of the supplier company.", notes:"Required on POST. Must be unique." },
+      "number":                { type:"String", required_for_api:"No", description:"Internal vendor code from your ERP.", notes:"Useful for cross-system reconciliation." },
+      "status":                { type:"String (enum)", required_for_api:"No", description:"Whether the supplier is active.", notes:"Allowed: active, inactive. Defaults to active." },
+      "display-name":          { type:"String", required_for_api:"No", description:"Display name shown in UI if different from legal name.", notes:"Defaults to name if not set." },
+      "primary-address":       { type:"Object (address)", required_for_api:"No", description:"Primary registered business address.", notes:"Recommended for compliance and tax." },
+      "primary-contact":       { type:"Object (contact)", required_for_api:"No", description:"Main contact: name, email, phone.", notes:"Used in SIM onboarding communications." },
+      "payment-term":          { type:"Object {id, code}", required_for_api:"No", description:"Default payment terms for all invoices.", notes:"Applied as default unless overridden at invoice level." },
+      "currency":              { type:"Object {code}", required_for_api:"No", description:"Default transacting currency.", notes:"Defaults to account base currency." },
+      "tax-id":                { type:"String", required_for_api:"No", description:"Tax identification number (VAT, EIN, ABN, etc.).", notes:"Important for tax compliance and e-invoicing." },
+      "tax-exempt":            { type:"Boolean", required_for_api:"No", description:"Whether this supplier is tax exempt.", notes:"Affects tax calculation on invoices." },
+      "remit-to-addresses":    { type:"Array of address objects", required_for_api:"No", description:"Addresses where payments should be sent.", notes:"Multiple can be defined. Used during payment runs." },
+      "buyer-hold":            { type:"Boolean", required_for_api:"No", description:"Blocks new POs from being issued to this supplier.", notes:"Set true to prevent new orders." },
+      "invoice-matching-level":{ type:"String (enum)", required_for_api:"No", description:"Level of invoice matching required.", notes:"Allowed: no_po, 2_way, 3_way. Overrides instance default." },
+      "coupa-connect-status":  { type:"String (enum)", required_for_api:"Read-only", description:"Connection status with Coupa Supplier Portal (CSP).", notes:"Allowed: not_invited, invited, connected." },
+      "po-method":             { type:"String (enum)", required_for_api:"No", description:"How POs are transmitted to this supplier.", notes:"Allowed: email, cxml, sftp, portal." },
+      "duns":                  { type:"String", required_for_api:"No", description:"Dun & Bradstreet DUNS number.", notes:"Used for risk and compliance integrations." },
+      "corporate-url":         { type:"String (URL)", required_for_api:"No", description:"Supplier website URL.", notes:"Optional." },
+      "created-at":            { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":            { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "SIM": {
+    description: "Supplier Information Management - manages onboarding, compliance, certifications, and risk data.",
+    api_endpoint: "/api/supplier_information_management",
+    fields: {
+      "id":                       { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "supplier":                 { type:"Object {id, name}", required_for_api:"Yes", description:"The supplier this SIM record belongs to.", notes:"Required on POST." },
+      "status":                   { type:"String (enum)", required_for_api:"Read-only", description:"Status of the SIM onboarding or renewal workflow.", notes:"Allowed: draft, pending, approved, rejected, expired. Managed by workflow." },
+      "risk-aware-status":        { type:"String (enum)", required_for_api:"Read-only", description:"Risk assessment result from Coupa Risk Aware.", notes:"Populated automatically if Risk Aware is enabled." },
+      "diversity-certifications": { type:"Array of certification objects", required_for_api:"No", description:"Diversity classifications (WBE, MBE, SDVOB, etc.).", notes:"Each includes certification type, number, and expiry." },
+      "insurance-certificates":   { type:"Array of insurance objects", required_for_api:"No", description:"Certificates of insurance (GL, Professional Indemnity, etc.).", notes:"Expiry dates tracked - alerts triggered before expiry." },
+      "tax-documents":            { type:"Array of document objects", required_for_api:"No", description:"Tax forms (W-9, W-8BEN, VAT registration, etc.).", notes:"Often required before payment can be processed." },
+      "banking-information":      { type:"Object (bank details)", required_for_api:"No", description:"Supplier bank account details for payment processing.", notes:"Sensitive field. Includes bank name, account number, routing number." },
+      "segmentations":            { type:"Array of segmentation objects", required_for_api:"No", description:"Business unit or spend category segmentations.", notes:"Restricts which business units can transact with this supplier." },
+      "csr-name":                 { type:"String", required_for_api:"Conditional", description:"Customer Success Representative managing onboarding.", notes:"Required when CSR-managed onboarding workflow is active." },
+      "csr-email":                { type:"String (email)", required_for_api:"Conditional", description:"Email address of the Customer Success Representative.", notes:"Required alongside csr-name when CSR workflow is active." },
+      "expiry-date":              { type:"Date (YYYY-MM-DD)", required_for_api:"No", description:"Date this SIM record expires and requires renewal.", notes:"Set based on compliance review period." },
+      "approved-at":              { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"Timestamp when the SIM record was approved.", notes:"System-populated on approval." },
+      "onboarding-completed-at":  { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"Timestamp when supplier onboarding was completed.", notes:"System-generated." },
+      "created-at":               { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." }
+    }
+  },
+  "Items": {
+    description: "Catalogue items available for purchase in Coupa. Can be hosted, punchout, or contract-linked.",
+    api_endpoint: "/api/items",
+    fields: {
+      "id":                   { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "name":                 { type:"String (max 255)", required_for_api:"Yes", description:"Display name shown to requesters.", notes:"Required on POST." },
+      "item-number":          { type:"String", required_for_api:"No", description:"Supplier part number or internal SKU.", notes:"Recommended. Transmitted on PO to supplier." },
+      "description":          { type:"String", required_for_api:"No", description:"Detailed description shown in catalogue search.", notes:"Improves searchability." },
+      "price":                { type:"Decimal", required_for_api:"Yes", description:"Unit price in the catalogue currency.", notes:"Required on POST." },
+      "currency":             { type:"Object {code}", required_for_api:"Yes", description:"Currency of the item price.", notes:"Required on POST." },
+      "uom":                  { type:"Object {code}", required_for_api:"Yes", description:"Unit of measure e.g. Each, Box, Kg, Hour.", notes:"Required on POST." },
+      "supplier":             { type:"Object {id, name}", required_for_api:"Yes", description:"Supplier who provides this catalogue item.", notes:"Required on POST." },
+      "commodity":            { type:"Object {id, name}", required_for_api:"No", description:"Spend category or commodity code.", notes:"Recommended for spend analytics and approval routing." },
+      "active":               { type:"Boolean", required_for_api:"No", description:"Whether the item is available for ordering.", notes:"Defaults to true. Set false to hide from catalogue." },
+      "contract":             { type:"Object {id}", required_for_api:"No", description:"Links this item to a negotiated contract.", notes:"Enforces contract pricing when set." },
+      "contract-line":        { type:"Object {id}", required_for_api:"No", description:"Links to a specific contract line.", notes:"Used when contract has line-level pricing." },
+      "lead-time":            { type:"Integer (days)", required_for_api:"No", description:"Expected delivery lead time in days.", notes:"Displayed to requesters in the catalogue." },
+      "image-url":            { type:"String (URL)", required_for_api:"No", description:"URL to a product image.", notes:"Must be publicly accessible. HTTPS recommended." },
+      "min-order-quantity":   { type:"Decimal", required_for_api:"No", description:"Minimum quantity that can be ordered.", notes:"Validated at requisition creation." },
+      "manufacturer":         { type:"String", required_for_api:"No", description:"Name of the item manufacturer.", notes:"Used for item identification." },
+      "manufacturer-part-num":{ type:"String", required_for_api:"No", description:"Manufacturer part number.", notes:"Useful for technical identification." },
+      "created-at":           { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":           { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "Requisition": {
+    description: "A purchase requisition submitted by a requester to initiate a purchase. Triggers approval workflow before converting to a PO.",
+    api_endpoint: "/api/requisitions",
+    fields: {
+      "id":                 { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "requisition-number": { type:"String", required_for_api:"Read-only", description:"Auto-generated unique display number.", notes:"Generated by Coupa on creation. Do not supply." },
+      "status":             { type:"String (enum)", required_for_api:"No", description:"Current workflow status.", notes:"Allowed: draft, pending_approval, approved, cancelled, ordered. Defaults to draft." },
+      "requested-by":       { type:"Object (user)", required_for_api:"Yes", description:"The Coupa user who submitted the requisition.", notes:"Required on POST." },
+      "ship-to-address":    { type:"Object (address)", required_for_api:"Yes", description:"Delivery address for goods or services.", notes:"Required on POST." },
+      "ship-to-attention":  { type:"String", required_for_api:"No", description:"Name or department to address the delivery to.", notes:"Optional." },
+      "line-items":         { type:"Array of requisition-line objects", required_for_api:"Yes", description:"Individual line items being requested.", notes:"At least one line required on POST." },
+      "total":              { type:"Decimal", required_for_api:"Read-only", description:"Total value. Auto-calculated from lines.", notes:"Read-only." },
+      "currency":           { type:"Object {code}", required_for_api:"Yes", description:"Currency for the requisition.", notes:"Required on POST." },
+      "justification":      { type:"String", required_for_api:"No", description:"Business justification for the purchase.", notes:"May be required by approval workflow rules." },
+      "need-by-date":       { type:"Date (YYYY-MM-DD)", required_for_api:"No", description:"Date goods or services are needed.", notes:"Can be set at line level too." },
+      "department":         { type:"Object {id, name}", required_for_api:"No", description:"Department or cost centre making the request.", notes:"Used for spend reporting." },
+      "buyer":              { type:"Object (user)", required_for_api:"No", description:"Buyer assigned to process this into a PO.", notes:"May be auto-assigned by workflow." },
+      "created-at":         { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":         { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "Contract": {
+    description: "A negotiated agreement with a supplier defining pricing, terms, conditions, and compliance requirements.",
+    api_endpoint: "/api/contracts",
+    fields: {
+      "id":                 { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "name":               { type:"String", required_for_api:"Yes", description:"Name or title of the contract.", notes:"Required on POST." },
+      "supplier":           { type:"Object {id, name}", required_for_api:"Yes", description:"Supplier party to this contract.", notes:"Required on POST." },
+      "status":             { type:"String (enum)", required_for_api:"No", description:"Lifecycle status.", notes:"Allowed: draft, approved, published, expired, cancelled, terminated. Defaults to draft." },
+      "start-date":         { type:"Date (YYYY-MM-DD)", required_for_api:"Yes", description:"Date the contract becomes effective.", notes:"Required on POST." },
+      "end-date":           { type:"Date (YYYY-MM-DD)", required_for_api:"No", description:"Contract expiry date.", notes:"No end date means an open-ended contract." },
+      "contract-value":     { type:"Decimal", required_for_api:"No", description:"Total committed or estimated value.", notes:"Used for spend tracking and commitment reporting." },
+      "currency":           { type:"Object {code}", required_for_api:"No", description:"Currency of the contract value.", notes:"Defaults to account currency." },
+      "type":               { type:"Object {id, name}", required_for_api:"No", description:"Contract type e.g. MSA, SOW, NDA.", notes:"Optional." },
+      "owner":              { type:"Object (user)", required_for_api:"No", description:"Coupa user managing this contract.", notes:"Receives expiry alerts." },
+      "commodity":          { type:"Object {id, name}", required_for_api:"No", description:"Primary spend category this contract covers.", notes:"Optional." },
+      "auto-renew":         { type:"Boolean", required_for_api:"No", description:"Whether the contract auto-renews at expiry.", notes:"Defaults to false." },
+      "notice-period-days": { type:"Integer", required_for_api:"No", description:"Days notice required to terminate or not renew.", notes:"Used to calculate termination notice deadlines." },
+      "max-spend":          { type:"Decimal", required_for_api:"No", description:"Maximum total spend allowed under this contract.", notes:"Used in spend compliance controls." },
+      "payment-term":       { type:"Object {id, code}", required_for_api:"No", description:"Payment terms for invoices under this contract.", notes:"Applied to invoices linked to this contract." },
+      "created-at":         { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":         { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "Expense Report": {
+    description: "An employee expense report submitted for reimbursement of business expenses.",
+    api_endpoint: "/api/expense_reports",
+    fields: {
+      "id":              { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "title":           { type:"String", required_for_api:"Yes", description:"Descriptive title e.g. Q2 Client Travel - New York.", notes:"Required on POST." },
+      "status":          { type:"String (enum)", required_for_api:"No", description:"Approval status.", notes:"Allowed: draft, submitted, approved, rejected, paid, cancelled. Defaults to draft." },
+      "submitted-by":    { type:"Object (user)", required_for_api:"Yes", description:"The employee submitting the expense report.", notes:"Required on POST." },
+      "currency":        { type:"Object {code}", required_for_api:"Yes", description:"Currency of the expenses being claimed.", notes:"Required on POST." },
+      "expense-lines":   { type:"Array of expense-line objects", required_for_api:"Yes", description:"Individual expense items (meals, travel, accommodation, mileage).", notes:"At least one line required." },
+      "total":           { type:"Decimal", required_for_api:"Read-only", description:"Total reimbursable. Auto-calculated from lines.", notes:"Read-only." },
+      "purpose":         { type:"String", required_for_api:"No", description:"Business purpose or justification.", notes:"May be required by expense policy." },
+      "department":      { type:"Object {id, name}", required_for_api:"No", description:"Department to charge expenses to.", notes:"Optional." },
+      "trip-start-date": { type:"Date (YYYY-MM-DD)", required_for_api:"No", description:"Start date of the business trip.", notes:"Optional." },
+      "trip-end-date":   { type:"Date (YYYY-MM-DD)", required_for_api:"No", description:"End date of the business trip.", notes:"Optional." },
+      "attachments":     { type:"Array of attachment objects", required_for_api:"No", description:"Receipts and supporting documents.", notes:"May be required by policy above a threshold." },
+      "created-at":      { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":      { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "User": {
+    description: "A Coupa system user - employee, buyer, approver, or integration service account.",
+    api_endpoint: "/api/users",
+    fields: {
+      "id":               { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned numeric ID.", notes:"Used in cross-object references." },
+      "login":            { type:"String", required_for_api:"Yes", description:"Unique login username.", notes:"Required on POST. Usually email or SSO identifier." },
+      "email":            { type:"String (email)", required_for_api:"Yes", description:"Email address. Used for notifications and login.", notes:"Required on POST. Must be unique." },
+      "firstname":        { type:"String", required_for_api:"Yes", description:"User first name.", notes:"Required on POST." },
+      "lastname":         { type:"String", required_for_api:"Yes", description:"User last name.", notes:"Required on POST." },
+      "fullname":         { type:"String", required_for_api:"Read-only", description:"Full name (firstname + lastname). System-generated.", notes:"Do not supply on POST." },
+      "status":           { type:"String (enum)", required_for_api:"No", description:"Whether the user account is active.", notes:"Allowed: active, inactive. Defaults to active." },
+      "employee-number":  { type:"String", required_for_api:"No", description:"HR employee number.", notes:"Used for HR system integration." },
+      "roles":            { type:"Array of role objects", required_for_api:"No", description:"Coupa permission roles assigned to this user.", notes:"Determines what the user can see and do." },
+      "default-currency": { type:"Object {code}", required_for_api:"No", description:"Default currency for requisitions and expenses.", notes:"Defaults to account base currency." },
+      "default-account":  { type:"Object {id, code}", required_for_api:"No", description:"Default GL account pre-populated on requisition lines.", notes:"Optional." },
+      "ship-to-address":  { type:"Object (address)", required_for_api:"No", description:"Default delivery address for this user's requisitions.", notes:"Pre-populated on new requisitions." },
+      "purchasing-limit": { type:"Decimal", required_for_api:"No", description:"Maximum total value this user can approve.", notes:"Used in approval limit controls." },
+      "department":       { type:"Object {id, name}", required_for_api:"No", description:"Department this user belongs to.", notes:"Used in approval routing and spend reporting." },
+      "manager":          { type:"Object (user)", required_for_api:"No", description:"This user's direct manager.", notes:"Used in approval chain routing." },
+      "sso-identifier":   { type:"String", required_for_api:"No", description:"SSO identifier for federated authentication.", notes:"Required if your Coupa instance uses SSO login." },
+      "locale":           { type:"String", required_for_api:"No", description:"Preferred language and region e.g. en-US, en-GB, fr-FR.", notes:"Affects date formats and UI language." },
+      "created-at":       { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":       { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "Address": {
+    description: "A postal address used across Coupa objects including suppliers, users, POs, invoices, and requisitions.",
+    api_endpoint: "/api/addresses",
+    fields: {
+      "id":            { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "name":          { type:"String", required_for_api:"Yes", description:"Display name e.g. London HQ, New York Office.", notes:"Required on POST." },
+      "street1":       { type:"String", required_for_api:"Yes", description:"First line of the street address.", notes:"Required on POST." },
+      "street2":       { type:"String", required_for_api:"No", description:"Second line (suite, floor, building).", notes:"Optional." },
+      "city":          { type:"String", required_for_api:"Yes", description:"City or town name.", notes:"Required on POST." },
+      "state":         { type:"String", required_for_api:"Conditional", description:"State, province, or region.", notes:"Required for US, Canada, Australia. Optional elsewhere." },
+      "postal-code":   { type:"String", required_for_api:"Conditional", description:"Postal or ZIP code.", notes:"Required for most countries. Format varies by country." },
+      "country":       { type:"Object {code}", required_for_api:"Yes", description:"Country using ISO 3166-1 alpha-2 code e.g. US, GB, DE, AU.", notes:"Required on POST." },
+      "attention":     { type:"String", required_for_api:"No", description:"Person or department to address delivery to.", notes:"Printed on PO and invoice documents." },
+      "vat-number":    { type:"String", required_for_api:"No", description:"VAT registration number for this location.", notes:"Required for VAT compliance in some regions." },
+      "location-code": { type:"String", required_for_api:"No", description:"Internal location code for ERP integration mapping.", notes:"Optional." },
+      "active":        { type:"Boolean", required_for_api:"No", description:"Whether this address is active and available.", notes:"Defaults to true on POST." },
+      "created-at":    { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":    { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "Account": {
+    description: "A GL (General Ledger) account or segment used for financial coding of transactions.",
+    api_endpoint: "/api/accounts",
+    fields: {
+      "id":           { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "code":         { type:"String", required_for_api:"Yes", description:"The GL account code from your ERP or chart of accounts.", notes:"Required on POST. Must match your finance system." },
+      "name":         { type:"String", required_for_api:"Yes", description:"Human-readable account name.", notes:"Required on POST." },
+      "account-type": { type:"Object {id, name}", required_for_api:"No", description:"Classification e.g. Expense, Asset, Liability.", notes:"Used for reporting and validation." },
+      "active":       { type:"Boolean", required_for_api:"No", description:"Whether this account is available for coding.", notes:"Defaults to true. Set false to retire an account." },
+      "segments":     { type:"Array of segment objects", required_for_api:"No", description:"Account segments for multi-segment chart of accounts (cost centre, department, project).", notes:"Structure depends on your account type configuration." },
+      "created-at":   { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":   { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "Payment": {
+    description: "Records a payment made to a supplier against one or more invoices in Coupa.",
+    api_endpoint: "/api/payments",
+    fields: {
+      "id":               { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated." },
+      "payment-number":   { type:"String", required_for_api:"No", description:"Reference number e.g. cheque number or EFT reference.", notes:"Often auto-generated or set by ERP." },
+      "status":           { type:"String (enum)", required_for_api:"No", description:"Current status.", notes:"Allowed: pending, processing, paid, voided, failed. System-managed." },
+      "supplier":         { type:"Object {id, name}", required_for_api:"Yes", description:"The supplier being paid.", notes:"Required on POST." },
+      "amount":           { type:"Decimal", required_for_api:"Yes", description:"Total amount being paid.", notes:"Required on POST." },
+      "currency":         { type:"Object {code}", required_for_api:"Yes", description:"Currency of the payment.", notes:"Required on POST." },
+      "payment-date":     { type:"Date (YYYY-MM-DD)", required_for_api:"Yes", description:"Date the payment was or is scheduled to be made.", notes:"Required on POST." },
+      "payment-method":   { type:"String (enum)", required_for_api:"No", description:"Method of payment.", notes:"Allowed: eft, cheque, wire, card, virtual_card." },
+      "invoices":         { type:"Array of {id} objects", required_for_api:"No", description:"Invoices this payment is applied against.", notes:"Array of invoice record references." },
+      "remit-to-address": { type:"Object (address)", required_for_api:"No", description:"Supplier address payment is sent to.", notes:"Defaults from supplier remit-to addresses." },
+      "notes":            { type:"String", required_for_api:"No", description:"Remittance information for this payment.", notes:"Transmitted to supplier in remittance advice." },
+      "created-at":       { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":       { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  },
+  "Lookup Value": {
+    description: "A configurable lookup list value used to populate dropdown fields across Coupa objects.",
+    api_endpoint: "/api/lookup_values",
+    fields: {
+      "id":          { type:"Integer", required_for_api:"Read-only", description:"Unique Coupa-assigned ID.", notes:"System-generated. Use as reference in other objects." },
+      "name":        { type:"String", required_for_api:"Yes", description:"Display name shown in dropdown menus.", notes:"Required on POST." },
+      "external-id": { type:"String", required_for_api:"No", description:"External ID to map to a code in your ERP or HR system.", notes:"Recommended for integration. Used to resolve lookup values in imports." },
+      "active":      { type:"Boolean", required_for_api:"No", description:"Whether this value is available for selection.", notes:"Defaults to true. Set false to retire a value without deleting." },
+      "parent":      { type:"Object {id}", required_for_api:"No", description:"Parent lookup value for hierarchical lists.", notes:"Used in cascading dropdown configurations." },
+      "created-at":  { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated creation timestamp.", notes:"Read-only." },
+      "updated-at":  { type:"DateTime (ISO 8601)", required_for_api:"Read-only", description:"System-generated last-updated timestamp.", notes:"Read-only." }
+    }
+  }
+};
+
+var CHIPS = {
+  "Invoice":        ["What does invoice-number do?","Is supplier required on POST?","What fields are read-only?","What are the status values?"],
+  "Invoice Line":   ["What fields are required?","Is account required?","What does tax-code do?","How does purchase-order-line work?"],
+  "Purchase Order": ["What fields are required on POST?","What does po-number do?","What are the status values?","What is need-by-date?"],
+  "Order Line":     ["What fields are required?","What does supplier-part-num do?","Is account required?","What does receipt-required mean?"],
+  "Supplier":       ["Is name required?","What is coupa-connect-status?","What does tax-id do?","What does buyer-hold mean?"],
+  "SIM":            ["What is csr-name used for?","What does risk-aware-status mean?","What is banking-information?","What are segmentations?"],
+  "Items":          ["Is price required?","What does uom mean?","What is min-order-quantity?","How does the contract field work?"],
+  "Requisition":    ["What fields are required?","What is justification?","What are the status values?","What does department do?"],
+  "Contract":       ["What fields are required?","What does end-date do?","What is notice-period-days?","What does auto-renew mean?"],
+  "Expense Report": ["What fields are required?","What does expense-lines contain?","What is the purpose field?","Is total auto-calculated?"],
+  "User":           ["What fields are required?","What is sso-identifier?","What does purchasing-limit do?","What is the manager field?"],
+  "Address":        ["What fields are required?","When is state required?","What is location-code?","What does attention do?"],
+  "Account":        ["What fields are required?","What does code mean?","What are segments?","What is account-type?"],
+  "Payment":        ["What fields are required?","What are the status values?","What is payment-method?","How do I link invoices?"],
+  "Lookup Value":   ["What fields are required?","What does external-id do?","What is the parent field?","When should I set active to false?"]
+};
+
+
+function toggleVis() {
+  var inp = document.getElementById("keyInput");
+  inp.type = inp.type === "password" ? "text" : "password";
+}
+
+function startApp() {
+  var k = document.getElementById("keyInput").value.trim();
+  var err = document.getElementById("gateError");
+  if (!k) { err.style.display = "block"; return; }
+  err.style.display = "none";
+  GROQ_KEY = k;
+  document.getElementById("gate").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+  populateObjects();
+  renderWelcome();
+}
+
+function changeKey() {
+  GROQ_KEY = ""; chatHistory = [];
+  document.getElementById("gate").style.display = "flex";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("keyInput").value = "";
+}
+
+function populateObjects() {
+  var sel = document.getElementById("objSelect");
+  sel.innerHTML = Object.keys(SCHEMA).map(function(o) {
+    return '<option value="' + o + '">' + o + '</option>';
+  }).join("");
+}
+
+function changeObject() {
+  currentObject = document.getElementById("objSelect").value;
+  clearChat();
+}
+
+function clearChat() {
+  chatHistory = [];
+  document.getElementById("objTag").textContent = currentObject;
+  renderWelcome();
+}
+
+function renderWelcome() {
+  var obj = SCHEMA[currentObject];
+  var chips = (CHIPS[currentObject] || []).map(function(c) {
+    return '<button class="chip" onclick="chipSend(this)">' + escHtml(c) + '</button>';
+  }).join("");
+  document.getElementById("messages").innerHTML =
+    '<div class="welcome">' +
+    '<div class="lottie-wrap" id="lottieAnim"></div>' +
+    '<div><div class="welcome-title">Ask about any <span>' + escHtml(currentObject) + '</span> field</div>' +
+    '<div class="welcome-sub">Get purpose, data type, and API required status instantly.</div></div>' +
+    '<div class="chips">' + chips + '</div>' +
+    '<div class="field-count">' + Object.keys(obj.fields).length + ' fields &nbsp;&middot;&nbsp; <span>' + escHtml(obj.api_endpoint) + '</span></div>' +
+    '</div>';
+  // Init Lottie animation — office/computer worker from LottieFiles CDN
+  if (window.lottie) {
+    lottie.loadAnimation({
+      container: document.getElementById('lottieAnim'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'https://assets10.lottiefiles.com/packages/lf20_m9zragkd.json'
+    });
+  }
+}
+
+function chipSend(btn) { sendMessage(btn.textContent); }
+
+function buildSystemPrompt() {
+  var d = SCHEMA[currentObject];
+  return "You are FieldBot, an expert on Coupa's " + currentObject + " API object.\n" +
+    "Object: " + d.description + "\n" +
+    "Endpoint: " + d.api_endpoint + "\n\n" +
+    "FIELD SCHEMA:\n" + JSON.stringify(d.fields, null, 2) + "\n\n" +
+    "For every field question answer with EXACTLY these four bold sections:\n" +
+    "**Purpose** - plain-English explanation\n" +
+    "**Type** - data type, format, constraints, allowed values\n" +
+    "**API Required** - Yes / No / Conditional / Read-only (for POST unless stated)\n" +
+    "**Notes** - integration tips, gotchas, defaults\n\n" +
+    "Use ONLY the schema above. If a field is not listed say so and suggest the official Coupa API docs. Be concise.";
+}
+
+function sendMessage(override) {
+  if (isLoading) return;
+  var ta = document.getElementById("q");
+  var text = (override !== undefined ? override : ta.value).trim();
+  if (!text) return;
+  var msgs = document.getElementById("messages");
+  if (msgs.querySelector(".welcome")) msgs.innerHTML = "";
+  ta.value = ""; ta.style.height = "auto"; updateSendBtn();
+  appendMsg("user", text);
+  var typing = appendTyping();
+  isLoading = true; updateSendBtn();
+  chatHistory.push({ role: "user", content: text });
+  fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_KEY },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      max_tokens: 1024,
+      messages: [{ role: "system", content: buildSystemPrompt() }].concat(chatHistory)
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    typing.remove();
+    if (data.error) { appendError(data.error.message); chatHistory.pop(); }
+    else {
+      var answer = data.choices[0].message.content;
+      chatHistory.push({ role: "assistant", content: answer });
+      appendMsg("bot", answer);
+    }
+    isLoading = false; updateSendBtn();
+  })
+  .catch(function(e) {
+    typing.remove(); appendError("Network error: " + e.message);
+    chatHistory.pop(); isLoading = false; updateSendBtn();
+  });
+}
+
+function appendMsg(role, content) {
+  var msgs = document.getElementById("messages");
+  var div = document.createElement("div");
+  div.className = "msg " + role;
+  if (role === "user") {
+    div.innerHTML = '<div class="avatar user">You</div><div class="bubble user">' + escHtml(content) + '</div>';
+  } else {
+    div.innerHTML = '<div class="avatar bot">&#x1F916;</div><div class="bubble bot">' + formatBot(content) + '</div>';
+  }
+  msgs.appendChild(div); scrollBottom(); return div;
+}
+
+function appendTyping() {
+  var msgs = document.getElementById("messages");
+  var div = document.createElement("div");
+  div.className = "typing";
+  div.innerHTML = '<div class="avatar bot">&#x1F916;</div><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  msgs.appendChild(div); scrollBottom(); return div;
+}
+
+function appendError(msg) {
+  var msgs = document.getElementById("messages");
+  var div = document.createElement("div");
+  div.className = "error-bar";
+  div.textContent = "Warning: " + msg;
+  msgs.appendChild(div); scrollBottom();
+}
+
+function scrollBottom() {
+  var m = document.getElementById("messages");
+  m.scrollTop = m.scrollHeight;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function formatBot(text) {
+  var lines = text.split("\n");
+  var sections = []; var cur = null;
+  for (var i = 0; i < lines.length; i++) {
+    var raw = lines[i];
+    var m = raw.match(/^\*\*([^*]+)\*\*\s*[-]?\s*(.*)/);
+    if (m) { if (cur) sections.push(cur); cur = { label: m[1].trim(), body: m[2].trim() }; }
+    else if (cur && raw.trim()) cur.body += (cur.body ? " " : "") + raw.trim();
+    else if (!cur && raw.trim()) sections.push({ label: null, body: raw.trim() });
+  }
+  if (cur) sections.push(cur);
+  if (sections.length > 1) {
+    return sections.map(function(s) {
+      var isReq = s.label && s.label.toLowerCase().indexOf("required") !== -1;
+      return '<div class="bot-section">' +
+        (s.label ? '<div class="section-label">' + escHtml(s.label) + '</div>' : '') +
+        (isReq ? reqBadge(s.body) : '<div class="section-body">' + inlineCode(escHtml(s.body)) + '</div>') +
+        '</div>';
+    }).join("");
+  }
+  return '<div class="section-body">' + inlineCode(text.replace(/\n/g,"<br>")) + '</div>';
+}
+
+function reqBadge(t) {
+  t = (t || "").toLowerCase();
+  if (t.indexOf("yes") !== -1)          return '<span class="req-badge req-yes">&#10003; Required for POST</span>';
+  if (t.indexOf("no") !== -1)           return '<span class="req-badge req-no">&#10007; Not Required</span>';
+  if (t.indexOf("conditional") !== -1)  return '<span class="req-badge req-cond">&#9676; Conditional</span>';
+  return '<span class="req-badge req-ro">&#8856; Read-only</span>';
+}
+
+function inlineCode(h) { return h.replace(/`([^`]+)`/g, '<code>$1</code>'); }
+
+function updateSendBtn() {
+  var ta = document.getElementById("q");
+  var btn = document.getElementById("sendBtn");
+  var ok = ta.value.trim() && !isLoading;
+  btn.className = "send-btn " + (ok ? "active" : "inactive");
+  btn.innerHTML = isLoading ? '<div class="spinner"></div>' : "&#x2191;";
+}
+
+function handleKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 120) + "px";
+}
+</script>
+</body>
+</html>
